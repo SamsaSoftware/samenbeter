@@ -1,0 +1,115 @@
+<script>
+
+    // widget configuration
+    var config = {
+        layout: {
+            name: 'layout',
+            padding: 4,
+            panels: [
+                { type: 'left', size: '50%', resizable: true, minSize: 300 },
+                { type: 'main', minSize: 300 }
+            ]
+        },
+        grid: {
+            name: 'grid',
+            show: {
+                toolbar            : true,
+                toolbarDelete    : true,
+                toolbarSave: true
+            },
+            toolbar: {
+                items: [
+                    { id: 'add', type: 'button', caption: 'Add Record', icon: 'w2ui-icon-plus' },
+                    { id: 'save', type: 'button', caption: 'Save all' }
+                ],
+                onClick: function (event) {
+                    console.log("gtgt");
+                    if (event.target == 'add') {
+                        w2ui.grid.add({ recid: w2ui.grid.records.length + 1 });
+                    }
+                    if (event.target == 'save') {
+                        console.log(w2ui.grid.records);
+                    }
+                }
+            },
+            records: [],
+            onClick: function(event) {
+                var grid = this;
+                var form = w2ui.form;
+                console.log(event);
+                event.onComplete = function () {
+                    var sel = grid.getSelection();
+                    console.log(sel);
+                    if (sel.length == 1) {
+                        form.recid  = sel[0];
+                        form.record = $.extend(true, {}, grid.get(sel[0]));
+                        form.refresh();
+                    } else {
+                        form.clear();
+                    }
+                }
+            }
+        },
+        form: {
+            header: 'Add column',
+            name: 'form',
+            fields: [
+                { name: 'field', type: 'text', required: true, html: { caption: 'Name', attr: 'size="40" maxlength="40"' } }
+            ],
+            actions: {
+                Reset: function () {
+                    this.clear();
+                },
+                Save: function () {
+                    console.log(this.record);
+                    $.ajax({
+                        type : 'POST',
+                        url: $('#urlAjax').val()+"/addcolumn",
+                        data: this.record,
+                        success:$.proxy(function(result){
+                            $.ajax({
+                                type : 'POST',
+                                url: $('#urlAjax').val()+"/getlist?nameTo=\Application\Document\User",
+                                success:$.proxy(function(result){
+
+                                    w2ui.grid.records = result.result;
+                                    w2ui.grid.columns = result.columns;
+                                    w2ui.grid.reload();
+                                }, this),
+                                dataType : 'json'
+                            });
+                        }, this),
+                        dataType : 'json'
+                    });
+
+                }
+            }
+        }
+    }
+
+    $(function () {
+        // initialization
+
+        loadList();
+
+
+    });
+
+    function loadList(){
+        $.ajax({
+            type : 'POST',
+            url: $('#urlAjax').val()+"/getlist?nameTo=\\Application\\Document\\User",
+            success:$.proxy(function(result){
+                $('#main').w2layout(config.layout);
+                config.grid.records = result.result;
+                config.grid.columns = result.columns;
+                w2ui.layout.content('left', $().w2grid(config.grid));
+                w2ui.layout.content('main', $().w2form(config.form));
+            }, this),
+            dataType : 'json'
+        });
+    }
+</script>
+Lista:
+<div id="main" style="width: 100%; height: 400px;"></div>
+<input type="hidden" name="urlAjax" id="urlAjax" value="<?php echo $this->url('home');?>" />

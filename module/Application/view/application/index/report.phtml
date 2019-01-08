@@ -1,0 +1,441 @@
+<script>
+
+    var selectedItems = [];
+    var selectedRefItems = [];
+    // widget configuration
+    var config = {
+        layout: {
+       	 name: 'layout<?php echo $this->viewId;?>',
+         padding: 4,
+         panels: [
+             { type: 'top', size: '25%', resizable: true, minSize: 100 },
+             { type: 'left', size: '50%', resizable: true, minSize: 300 },
+             { type: 'main', minSize: 300 }
+         ]
+        },
+       
+        gridMenu: { 
+        	name: 'gridMenu<?php echo $this->viewId;?>',
+        	show: {
+                header : true,               
+            },
+            reorderColumns: true,
+            menu: [],
+            records: [],
+            onClick: function(event) {
+                var grid = this;
+                event.onComplete = function () {
+                    var sel = grid.getSelection();
+                    $.ajax({
+                        type : 'POST',
+                        url: $('#urlAjax').val()+"/getMethodResult?objectType=\\Application\\Document\\"+"<?php echo $this->parentType; ?>"+"&methodName=get"+"<?php echo $this->id; ?>"+"&id="+event.recid,
+                        
+                         success:$.proxy(function(result){
+                             w2ui['grid<?php echo $this->viewId;?>'].records = result.records;
+                             w2ui['grid<?php echo $this->viewId;?>'].columns = result.columns;
+                             w2ui['grid<?php echo $this->viewId;?>'].searches = result.search;                               
+                           	 w2ui['grid<?php echo $this->viewId;?>'].reload();
+                             w2ui['grid<?php echo $this->viewId;?>'].parentType = '<?php echo $this->parentType; ?>';
+                             w2ui['grid<?php echo $this->viewId;?>'].parentId =event.recid;
+                          }, this),
+                         dataType : 'json'
+                      });
+                  
+                  }
+                }
+            },         
+        grid: {
+            name: 'grid<?php echo $this->viewId;?>',
+            show: {
+                toolbar            : true,
+                header : true,
+                selectColumn: true,
+                footer    : true
+            },
+            reorderColumns: true,
+            toolbar: {
+                items: [
+                    {
+                        type :  'menu', id:'menu', caption:  '<?php echo $this->translate('Menu'); ?>', icon: 'fa-table', items:[
+     
+                            {   id: 'export',
+                                type: 'button',
+                                caption: '<?php echo $this->translate('export_field'); ?>',
+                                icon: 'w2ui-icon-info'
+                            },
+                            {
+                                id: 'pdf',
+                                type: 'button',
+                                caption: '<?php echo $this->translate('print_pdf'); ?>',
+                                icon: 'w2ui-icon-info'
+                            }
+                        ]
+                    }
+                ],
+                onClick: function (event) {
+
+                   
+                    if (event.target == 'menu:export') {
+                        window.location = $('#urlAjax').val()+
+                        "/export?object=\\Application\\Document\\"+"<?php echo $this->id; ?>"+
+                        "&viewId="+"<?php echo $this->viewId?>"+
+                        "&gridId="+'grid<?php echo $this->viewId;?>';
+                    }
+                    if (event.target == 'menu:pdf') {
+
+                        $.ajax({
+                            type : 'POST',
+                            url: $('#urlAjax').val()+"/print?object=\\Application\\Document\\"+"<?php echo $this->id; ?>",
+                            success:$.proxy(function(result){
+                                w=window.open(result.url, '_blank', 'width=1000');
+                                //w.print(); w.close();
+                            }, this),
+                            dataType : 'json'
+                        });
+
+                       }
+                }
+            },
+            menu: [],
+            records: [],
+            onMenuClick: function(event) {
+               
+            },
+            searches: [],
+            sort: [],
+            onClick: function(event) {
+              
+            },
+            onSelect: function (event) {
+                selectedItems.push(event.recid);
+            },
+            onUnselect : function (event) {
+                var index = selectedItems.indexOf(event.recid);
+                if (index > -1) {
+                    selectedItems.splice(index, 1);
+                }
+            },
+            onStateSave : function (event) {
+                console.log(event);
+                $.ajax({
+                    type : 'POST',
+                    url: $('#urlAjax').val()+"/savestate",
+                    data :  {
+                        "view" : "<?php echo $this->viewId;?>",
+                        "grid": 'grid<?php echo $this->viewId;?>',
+                        "data" : event.state,
+                        "columns" : event.columns
+                    },
+                    success:$.proxy(function(result){
+                    }, this),
+                    dataType : 'json'
+                });
+
+            }
+        },
+      
+        form: {
+            header: 'Edit Record',
+            name: 'form<?php echo $this->viewId;?>',
+            fields: [],
+            actions: {
+                Reset: function () {
+                    this.clear();
+                },
+                Save: function () {
+                    var errors = this.validate();
+                    if (errors.length > 0) return;
+                    $.ajax({
+                        type : 'POST',
+                        url: $('#urlAjax').val()+"/saveobject",
+                        data :  {
+                        	"parentId" : "<?php echo $this->parentId; ?>",
+                        	"parentType" : "\\Application\\Document\\"+"<?php echo $this->parentType; ?>",
+                            "objectType" : "\\Application\\Document\\<?php echo $this->id; ?>",
+                            "data" : this.record
+                        },
+                        success:$.proxy(function(result){
+                            if(result.success) {
+                            	w2ui.grid<?php echo $this->viewId;?>.clear();
+                                //refresh the page after insert the field
+                            	reloadGridData('grid<?php echo $this->viewId;?>','<?php echo $this->parentType; ?>','<?php echo $this->parentId; ?>','<?php echo $this->id; ?>');
+                                //window.location = window.location;
+                            }
+                        }, this),
+                        dataType : 'json'
+                    });
+
+                }
+            }
+        }
+    }
+
+    
+  
+
+    $(function () {
+        // initialization
+
+        loadList();
+
+
+    });
+
+  
+
+    
+    function reloadGridData(gridName, parentType,parentId, objectType ){
+    	w2ui[gridName].clear();
+        $.ajax({
+            type : 'POST',
+            //url: $('#urlAjax').val()+"/getlist?objectType=\\Application\\Document\\"+"<?php echo $this->id; ?>"+"&objectId="+"<?php echo $this->objectId; ?>",
+            url: $('#urlAjax').val()+"/getMethodResult?objectType=\\Application\\Document\\"+parentType+"&methodName=get"+objectType+"&id="+parentId,
+            
+             success:$.proxy(function(result){
+           	    //$('#main').w2layout(config.layout);  
+           	    w2ui[gridName].records = result.records;
+            	//w2ui[gridName].columns = result.columns;
+            	//w2ui[gridName].searches = result.search;
+                w2ui[gridName].reload();
+            }, this),
+            dataType : 'json'
+        });
+    }
+
+    function overrideLocalStorageStates(result, gridName)
+    {
+        var states = [];
+        if (result.items.length > 0) {
+            var columns = {'columns': $.parseJSON(result.items[0].state)};
+        } else {
+            columns = {'columns' : ''}
+        }
+        var savedState = $.parseJSON(localStorage.w2ui || '{}');
+        if (!savedState.states) savedState.states = {};
+        savedState.states[gridName] = columns;
+        //savedState.states = states;
+        localStorage.w2ui = JSON.stringify(savedState);
+        console.log($.parseJSON(localStorage.w2ui));
+    }
+
+    function initiateGrid(gridName, location , configs, id, parentType, header){
+    	var gridMenu = [];
+    	var gridUi = gridName+'<?php echo $this->viewId;?>';
+        $.ajax({
+            type : 'POST',
+            url: $('#urlAjax').val()+"/getMethodResultList?objectType=\\Application\\Document\\View&methodName=cgetLinks&id="+"<?php echo $this->viewId; ?>"+"&criteria=id-"+gridName,
+            success:$.proxy(function(result){
+            	if(result.items !== undefined){	
+          		   	gridMenu = result.items.slice();       		   	
+            	 }
+                 var edit = { id: 1, text: 'Edit Item', icon: 'fa-edit' };
+         	     var menu = [];
+          	     menu.push(edit);
+                 var i=2;
+                 $.each(gridMenu, function( index, value){
+              	    var link = { id: i++, text: value.link, icon: 'fa-edit'}
+               	    menu.push(link);
+               	});
+                configs.menu = menu;
+         	    $.ajax({
+                  type : 'GET',
+                      url:$('#urlAjax').val()+"/getMethodResultList",
+                      data : {
+                          objectType : '\\Application\\Document\\User',
+                          methodName : 'getSetting',
+                          id : 0,
+                          criteria : 'viewId-'+"<?php echo $this->viewId;?>"+
+                          "-gridId-"+gridUi+
+                          "-userId-"+"<?php echo $this->sessionHelper()->getUserId();?>"
+                      },
+                      success:$.proxy(function(result){
+                    	  if(result.items[0] !== undefined){
+                        	  console.log(result);
+                    		  //overrideLocalStorageStates(result, gridUi);
+                    		  //config.gridRef.columns = $.parseJSON(result.items[0].state);
+                    	  }
+                          //config.gridRef.searches = result.search;
+                          console.log(' add grid -'+gridName);
+                         // if (! w2ui[gridUi]) {
+                             w2ui.layout<?php echo $this->viewId;?>.content(location, $().w2grid(configs));
+                          //}
+                          var objectType = id;
+                          w2ui[gridUi].objectTypeRef = objectType.substr(3);
+                          w2ui[gridUi].header = header;    
+                          w2ui[gridUi].parentType = parentType;  
+                          
+                      }, this),
+                      dataType : 'json'
+                });
+            }, this),
+            dataType : 'json'
+        });
+        
+    }
+
+    function loadList(){
+
+        $.ajax({
+            type : 'POST',
+           // url: $('#urlAjax').val()+"/getlist?objectType=\\Application\\Document\\"+"<?php echo $this->id; ?>"+
+           // "&objectId="+"<?php echo $this->objectId; ?>"+
+           // "&viewId="+"<?php echo $this->viewId;?>"+"&gridId="+'grid<?php echo $this->viewId;?>',
+            url: $('#urlAjax').val()+"/getMethodResult?objectType=\\Application\\Document\\"+"<?php echo $this->parentType; ?>"+"&methodName=get"+"<?php echo $this->id; ?>"+"&id="+"<?php echo $this->parentId; ?>",
+            
+            success:$.proxy(function(result){
+           	    //$('#main').w2layout(config.layout);
+            	$().w2destroy('grid<?php echo $this->viewId;?>');  
+            	$().w2destroy('form<?php echo $this->viewId;?>'); 
+            	var a = new String('<?php echo $this->layout; ?>');
+           	    
+           	    if( a ==  ""){
+              	      $('#main').w2layout(config.layout);
+           	    }else
+           	    {
+              	       $('#layout').w2layout(config.layout);
+                	   w2ui['<?php echo $this->layout; ?>'].content('main',w2ui['layout<?php echo $this->viewId;?>'] );
+           	    }
+                config.grid.records = result.records;
+                config.grid.columns = result.columns;
+                config.grid.searches = result.search;  
+                initiateGrid('grid', 'left' , config.grid, '<?php echo $this->id; ?>','<?php echo $this->parentType; ?>', '<?php echo $this->translate($this->id); ?>');
+                $.ajax({
+                    type : 'POST',
+                    url: $('#urlAjax').val()+"/getMethodResult?objectType=\\Application\\Document\\"+"<?php echo $this->parentType; ?>"+"&methodName=&id="+"<?php echo $this->parentId; ?>",
+                     success:$.proxy(function(result){
+                    	 config.gridMenu.records = result.records;
+                    	 config.gridMenu.columns = result.columns;
+                    	 config.gridMenu.searches = result.search;  
+                    	                              
+                      }, this),
+                     dataType : 'json'
+                  }); 
+                initiateGrid('gridMenu', 'top' , config.gridMenu, '<?php echo $this->parentType; ?>','<?php echo $this->parentType; ?>', '<?php echo $this->translate($this->parentType); ?>');
+                initForm('grid<?php echo $this->viewId;?>', config.form, "<?php echo $this->id; ?>",'layout'+'<?php echo $this->viewId;?>', "main",'<?php echo $this->parentType; ?>','<?php echo $this->parentId; ?>', false, null);
+                                           
+            }, this),
+            dataType : 'json'
+        });
+
+      //  initForm(config.menu, "menu", "top");
+
+    }
+
+
+    function initForm(gridName, forms, formName, layoutIn, place, parentType, parentId, popup, selectedId){
+ 	   $.ajax({
+           type : 'POST',
+          // url: $('#urlAjax').val()+"/getdefinition?objectType=\\Application\\Document\\"+"<?php echo $this->id; ?>"+"&viewId="+
+           url:$('#urlAjax').val()+"/getMethodResultList?objectType=\\Application\\Document\\View&methodName=getField&id="+"<?php echo $this->viewId;?>"+"&criteria=object-"+formName,//+"55fafd8d8f7b68cb190041a9",//&criteria=object-Customer"
+                success:$.proxy(function(result){
+             //  $('#main').w2layout(config.layout);
+                    var buttons = [];
+                    var fields = [];
+                    
+                    console.log(result.items );
+                    $.each(result.items, function(index, value) {
+                        if (value.type == "button") {
+                            var button = {};
+                            button[value.html.caption] = function(){
+                              $.ajax({
+                                  type : 'POST',       
+                                          
+                                  url:$('#urlAjax').val()+"/execute",
+
+                                  data :  {
+                                      "parentId" : parentId,//"<?php echo $this->parentId; ?>",
+                                      "parentType" : "\\Application\\Document\\"+parentType,//"\\Application\\Document\\"+"<?php echo $this->parentType; ?>",
+                                      "objectType" : "\\Application\\Document\\"+value.object,//"<?php echo $this->id; ?>",
+                                      "id" : this.recid,
+                                      "actionExecution" :value.actionExecution,
+                                      "data" : this.record
+                                  },
+                                  success:$.proxy(function(result){
+                                      console.log(result);
+                                      if(result.status == 'success') {     
+                                                            
+                                          //refresh the page after insert the field
+                                          reloadGridData(gridName, parentType,parentId, value.object);
+                                  	      $().w2popup('close');
+                                          //window.location = window.location;
+                                    
+                                   } else {
+                                      console.log(result.error);
+                                   }
+                                  }, this),
+                                  dataType : 'json'
+                              });
+                            }
+                            buttons = $.extend(buttons, button);
+                            //result.items.splice(index, 1);
+                        } else {
+                           fields.push(value);
+                        }
+                    });
+                    console.log(fields);
+                    forms.fields = fields;//result.items;
+                    forms.actions = buttons;//$.extend([], buttons);
+                  
+                     if (selectedId != null) {
+                         $.ajax({
+                             type: 'POST',
+                             url: $('#urlAjax').val() + "/getform?objectType=\\Application\\Document\\" + formName + "&viewId=" + "<?php echo $this->viewId;?>" + "&workspaceId=" + "<?php echo $this->sessionHelper()->getWorkspaceId();?>" + "&objectId=" + selectedId,
+                             success: $.proxy(function (result) {
+                            	 forms.record = $.extend(true, {}, result);                                
+                             }, this),
+                             dataType: 'json'
+                         });
+                     }
+                     if( ! popup){
+                     	   w2ui[layoutIn].content(place, $().w2form(forms));
+                        }else{
+                       	 $().w2popup('open', {
+                             title   : 'Add record',
+                             body    : '<div id="form" style="width: 100%; height: 100%;"></div>',
+                             style   : 'padding: 15px 0px 0px 0px',
+                             width   : 500,
+                             height  : 300,
+                             showMax : true,
+                             onToggle: function (event) {
+                            	 $().w2form(forms).hide();
+                                 event.onComplete = function () {
+                                	 $().w2form(forms).show();
+                                	 $().w2form(forms).resize();
+                                 }
+                             },
+                             onOpen: function (event) {
+                                 event.onComplete = function () {
+                                     // specifying an onOpen handler instead is equivalent to specifying an onBeforeOpen handler, which would make this code execute too early and hence not deliver.
+                                     $('#w2ui-popup #form').w2render($().w2form(forms).name);
+
+                                 }
+                             }
+                         });
+                    }
+           }, this),
+           dataType : 'json'
+       });
+
+    }
+
+    
+
+
+</script>
+
+<div id="main" style="width: 100%; height: 400px;"></div>
+
+<div id="popup" style="width: 100%; height: 400px;"></div>
+
+<input type="hidden" name="urlAjax" id="urlAjax"
+	value="<?php echo $this->url('home');?>" />
+
+<input type="hidden" name="parentId" id="parentId"
+	value="<?php echo $this->parentId; ?>" />
+
+<input type="hidden" name="idObject" id="idObject"
+	value="<?php echo $this->id; ?>" />
+
+<input type="hidden" name="parentType" id="parentType"
+	value="<?php echo $this->parentType; ?>" />
+

@@ -1,0 +1,42 @@
+<ul class="nav navbar-nav">
+    <?php
+
+    foreach ($this->container as $page) {
+
+        if (!$this->navigation()->accept($page)) continue;
+//       var_dump($page);
+//       print "Mihai";exit;
+        $hasChildren = $page->hasPages();
+
+        if (!$hasChildren) {
+            ?>
+            <li><a href="<?php echo $page->getHref(); ?>"><?php echo $this->translate($page->getLabel()); ?></a></li>
+        <?php
+        } else {
+            $access = false;
+            foreach ($page->getPages() as $child) {
+                if ($this->navigation()->accept($child) && $child->get("separator") !== true) {
+                    $access = true;
+                }
+            }
+            if($access){ ?>
+                <li class="dropdown">
+                    <a class="dropdown-toggle" data-toggle="dropdown" href="<?php echo $page->getHref(); ?>">
+                        <?php echo $page->getLabel(); ?>
+                    </a>
+                    <ul class="dropdown-menu">
+                        <?php
+                        foreach ($page->getPages() as $child) {
+                            if (!$this->navigation()->accept($child)) continue;
+                            ?>
+                            <li><a href="<?php echo $child->getHref(); ?>"><?php echo $child->getLabel(); ?></a></li>
+                        <?php
+                        }
+                        ?>
+                    </ul>
+                </li>
+            <?php }
+        }
+    }
+    ?>
+</ul>

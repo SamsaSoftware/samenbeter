@@ -1,0 +1,25 @@
+<html>
+<body>
+<p>Hyperion Works Invoice</p>
+<p>Date: %date%</p>
+<p>Customer: %customer%</p>
+
+<table>
+    <tr>
+        <th>Recid</th>
+        <th>Title</th>
+        <th>Name</th>
+        <th>Deleted</th>
+    </tr>
+    [items]
+    <tr>
+        <td>%recid%</td>
+        <td>%title%</td>
+        <td>%name%</td>
+        <td>%deleted%</td>
+    </tr>
+    [/items]
+</table>
+<p>Total: %total%</p>
+</body>
+</html>

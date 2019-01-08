@@ -1,0 +1,78 @@
+
+
+<div id="form" style="width: 750px;">
+    <div class="w2ui-page page-0">
+        <div class="w2ui-field">
+            <label>Types:</label>
+            <div>
+                <select name="select_type">
+                    <option value="text">text</option>
+                    <option value="integer">integer</option>
+                    <option value="date">date</option>
+                    <option value="checkbox">checkbox</option>
+                </select>
+            </div>
+        </div>
+        <div class="w2ui-field">
+            <div><input id="input-integer" ></div>
+        </div>
+
+    </div>
+
+    <div class="w2ui-buttons">
+        <button class="btn" name="reset">Reset</button>
+        <button class="btn" name="save">Save</button>
+    </div>
+</div>
+
+<script type="text/javascript">
+    $(function () {
+
+        $('#form').w2form({
+            name  : 'form',
+            fields: [
+                { field: 'select_type', type: 'select',  required: false, options: { items: ['text', 'integer', 'date','checkbox'] } },
+            ],
+            actions: {
+                reset: function () {
+                    this.clear();
+                },
+                save: function () {
+
+                    console.log($('#select_type').val());
+                    if ($('#select_type').val() == 'integer'){
+                        $('#input-integer').w2field('int');
+                    }
+
+                    if ($('#select_type').val() == 'date'){
+                        $('#input-integer').w2field('date');
+                    }
+
+                    if ($('#select_type').val() == 'checkbox'){
+                        $('#input-integer').w2field('checkbox');
+                    }
+
+
+                   /* $.ajax({
+                        type : 'POST',
+                        url: $('#urlAjax').val()+"/getinput",
+                        success:$.proxy(function(result){
+
+                        }, this),
+                        dataType : 'json'
+                    });*/
+
+                }
+            }
+        });
+
+        $('#form').on('*', function (event) {
+            console.log('Event: '+ event.type, 'Target: '+ event.target, event);
+        });
+        $('#select_type').change(function(){
+           console.log($('#select_type').val());
+        });
+    });
+</script>
+<input type="hidden" name="urlAjax" id="urlAjax" value="<?php echo $this->url('home');?>" />
+

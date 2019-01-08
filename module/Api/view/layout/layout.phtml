@@ -1,0 +1,165 @@
+<?php echo $this->doctype(); ?>
+ <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1" />
+<html lang="en">
+    <head>
+        <meta charset="utf-8">
+        <?php $organization = $this->sessionHelper()->getOrganization(); ?>
+        <?php if (getenv('APP_ENV') == 'production') {
+            $favicon = 'favicon';
+            if ($organization != null) {
+                echo $this->headTitle($organization->getName())->setSeparator(' - ')->setAutoEscape(false);
+            } else {
+                echo $this->headTitle($this->translate('app_name'))->setSeparator(' - ')->setAutoEscape(false);
+            }
+        } else {
+
+            $favicon = getenv('APP_ENV');
+            if ($organization != null) {
+                echo $this->headTitle('[' . getenv('APP_ENV') . ']' . $organization->getName())->setSeparator(' - ')->setAutoEscape(false);
+            } else {
+                echo $this->headTitle('[' . getenv('APP_ENV') . ']' . $this->translate('app_name'))->setSeparator(' - ')->setAutoEscape(false);
+
+            }
+        }
+        ?>
+
+        <?php echo $this->headMeta()
+            ->appendName('viewport', 'width=device-width, initial-scale=1.0')
+            ->appendHttpEquiv('X-UA-Compatible', 'IE=edge')
+        ?>
+        <!-- Le styles -->
+        <?php echo $this->headLink(array('rel' => 'shortcut icon', 'type' => 'image/vnd.microsoft.icon', 'href' => $this->basePath() . '/img/'.$favicon.'.ico'))
+						->prependStylesheet($this->basePath('css/style.css'))
+                        //->prependStylesheet('http://netdna.bootstrapcdn.com/font-awesome/4.1.0/css/font-awesome.min.css')
+			
+						->prependStylesheet($this->basePath('css/kendo.material.mobile.min.css'))	
+						->prependStylesheet($this->basePath('css/kendo.material.min.css')) 
+						->prependStylesheet($this->basePath('css/kendo.common-material.min.css')) 
+						->prependStylesheet($this->basePath('css/kendo.default.min.css'))
+						->prependStylesheet($this->basePath('css/kendo.common.min.css'))
+                        ->prependStylesheet($this->basePath('minified/themes/default.min.css'))
+                        ->prependStylesheet($this->basePath('css/w2ui.css'))
+                        ->prependStylesheet('http://fonts.googleapis.com/css?family=Open+Sans:400,600,700')
+                        ->prependStylesheet($this->basePath('css/font-awesome.css'))
+                        ->prependStylesheet($this->basePath('melon/assets/css/fontawesome/font-awesome.min.css'))
+                        ->prependStylesheet($this->basePath('melon/assets/css/icons.css'))
+                        ->prependStylesheet($this->basePath('melon/assets/css/responsive.css'))
+                        ->prependStylesheet($this->basePath('melon/assets/css/plugins.css'))
+                        ->prependStylesheet($this->basePath('melon/assets/css/main.css'))
+                        ->prependStylesheet($this->basePath('melon/bootstrap/css/bootstrap.min.css'))
+
+        ?>
+
+        <!-- Scripts -->
+        <?php echo $this->headScript()
+            ->prependFile($this->basePath('js/common.js'))
+            ->prependFile($this->basePath('melon/assets/js/plugins.form-components.js'))
+            ->prependFile($this->basePath('melon/assets/js/plugins.js'))
+            ->prependFile($this->basePath('melon/assets/js/app.js'))
+
+            ->prependFile($this->basePath('melon/plugins/fileinput/fileinput.js'))
+            ->prependFile($this->basePath('melon/plugins/noty/themes/default.js'))
+            ->prependFile($this->basePath('melon/plugins/noty/layouts/top.js'))
+            ->prependFile($this->basePath('melon/plugins/noty/jquery.noty.js'))
+            ->prependFile($this->basePath('melon/plugins/validation/additional-methods.min.js'))
+            ->prependFile($this->basePath('melon/plugins/validation/jquery.validate.min.js'))
+
+            ->prependFile($this->basePath('js/w2ui.js'))
+            ->prependFile($this->basePath('minified/jquery.sceditor.bbcode.min.js'))
+
+            ->prependFile($this->basePath('js/chat/moment.min.js'))
+            ->prependFile($this->basePath('js/chat/websocket.js'))
+            ->prependFile($this->basePath('js/chat/swf_object.js'))
+            ->prependFile($this->basePath('js/chat/handlebars.min.js'))
+
+            ->prependFile($this->basePath('melon/plugins/blockui/jquery.blockUI.min.js'))
+            ->prependFile($this->basePath('melon/plugins/daterangepicker/daterangepicker.js'))
+            ->prependFile($this->basePath('melon/plugins/daterangepicker/moment.min.js'))
+            ->prependFile($this->basePath('melon/plugins/sparkline/jquery.sparkline.min.js'))
+            ->prependFile($this->basePath('melon/plugins/flot/excanvas.min.js'), 'text/javascript', array('conditional' => 'lt IE 9'))
+            ->prependFile($this->basePath('melon/plugins/slimscroll/jquery.slimscroll.horizontal.min.js'))
+            ->prependFile($this->basePath('melon/plugins/slimscroll/jquery.slimscroll.min.js'))
+            ->prependFile($this->basePath('melon/plugins/cookie/jquery.cookie.min.js'))
+            ->prependFile($this->basePath('melon/plugins/respond/respond.min.js'))
+            ->prependFile($this->basePath('melon/assets/js/libs/breakpoints.js'))
+            ->prependFile($this->basePath('melon/plugins/event.swipe/jquery.event.swipe.js'))
+            ->prependFile($this->basePath('melon/plugins/event.swipe/jquery.event.move.js'))
+            ->prependFile($this->basePath('melon/plugins/touchpunch/jquery.ui.touch-punch.min.js'))
+            ->prependFile($this->basePath('melon/assets/js/libs/lodash.compat.min.js'))
+            ->prependFile($this->basePath('melon/bootstrap/js/bootstrap.min.js'))
+            ->prependFile($this->basePath('melon/plugins/jquery-ui/jquery-ui-1.10.2.custom.min.js'))
+            ->prependFile($this->basePath('melon/assets/js/libs/jquery-1.10.2.min.js'))
+
+            ->prependFile($this->basePath('js/respond.min.js'), 'text/javascript', array('conditional' => 'lt IE 9',))
+            ->prependFile($this->basePath('js/html5shiv.js'),   'text/javascript', array('conditional' => 'lt IE 9',))
+
+        ; ?>
+        <script>
+            $(document).ready(function(){
+                "use strict";
+
+                App.init(); // Init layout and core plugins
+                Plugins.init(); // Init all plugins
+                FormComponents.init(); // Init all form-specific plugins
+            });
+        </script>
+
+    </head>
+   
+    <body>
+
+    <?php
+    $user = $this->permission()->getUser();
+    if ($user === null) {
+        $role = 'anonymous';
+    } else {
+        $role = $user->getUserRole()->getRole();
+    }
+    $acl = $this->permission()->getAcl();
+    //$session = $this->sessionHelper()->getSession()
+    ?>
+        <nav class="header navbar navbar-fixed-top" role="navigation">
+            <div class="container">
+                <div class="navbar-header">
+                    <button type="button" id="navbar" class="navbar-toggle" data-toggle="collapse" data-target=".navbar-collapse">
+                        <span class="icon-bar"></span>
+                        <span class="icon-bar"></span>
+                        <span class="icon-bar"></span>
+                    </button>
+                    <a class="navbar-brand" href="<?php echo $this->url('home', array('action' => 'view')) ?>">
+                        <?php $organization = $this->sessionHelper()->getOrganization();
+                        if ($organization != null) { ?>
+                         <img id="logo" src="<?php echo $this->basePath($organization->getLogo());?>">
+                        <?php } else {?>
+                            <img id="logo" src="<?php echo $this->basePath('img/rsz_1.png');?>">
+                        <?php } ?>
+
+                    </a>
+                </div>
+                <div class="navbar-collapse collapse ">
+                    <?php
+                        echo $this->navigation('Navigation')
+                            ->setAcl($acl)
+                            ->setRole($role)
+                            ->menu()
+                            ->setPartial('partial/submenu')
+                            ->render();
+                        ?>
+                    <?php if ($user != null) { ?>
+                    <ul class="nav navbar-nav navbar-right">
+                        <li><a href="javascript:void(0)"><?php echo $user->getName().' '.$user->getLastName(); ?></a></li>
+                        <li><a href="<?php echo $this->url('user', array('action' => 'profile'));?>"><?php echo $this->translate('profile_label') ?></a></li>
+                        <li><a href="<?php echo $this->url('auth', array('action' => 'logout'));?>"><?php echo $this->translate('menu_logout') ?></a></li>
+                    </ul>
+                    <?php }?>
+                </div><!--/.nav-collapse -->
+            </div>
+        </nav>
+        <div class="container">
+            <?php echo $this->content; ?>
+        </div> <!-- /container -->
+
+        
+    </body>
+  
+</html>

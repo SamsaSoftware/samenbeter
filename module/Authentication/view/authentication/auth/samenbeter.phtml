@@ -1,0 +1,54 @@
+
+<?php
+$this->flashMessages($flashMessages);
+
+$form->setAttribute('action', $this->url('auth', array('action' => 'login')));
+$form->setAttribute('class', 'form-signin');
+$form->prepare(); ?>
+<div class="logo">
+    <strong>Samsa</strong> Software
+</div>
+
+<div class="box">
+    <div class="content">
+        <?php echo $this->form()->openTag($form);
+
+        ?>
+        <h3 class="form-title">Please sign in <b><?php echo $this->organizationObj->getName() ?></b></h3>
+        <div class="form-group">
+            <div class="input-icon">
+                <i class="icon-user"></i>
+                <input type="text" name="email" class="form-control" placeholder="Email address" autofocus="autofocus" data-rule-required="true" data-msg-required="Please enter your email." />
+            </div>
+        </div>
+        <div class="form-group">
+            <!--<label for="password">Password:</label>-->
+            <div class="input-icon">
+                <i class="icon-lock"></i>
+                <input type="password" name="password" class="form-control" placeholder="Password" data-rule-required="true" data-msg-required="Please enter your password." />
+            </div>
+        </div>
+        <input type="hidden" id="organization" class="form-control" name="organization" value="<?php echo $this->organizationObj->getDbName(); ?>">
+
+        <div class="form-actions">
+            <?php echo $this->formRow($form->get('remember_me'));?>
+            <?php echo $this->formInput($form->get('submit')); ?>
+        </div>
+
+        <?php echo $this->form()->closeTag($form); ?>
+
+
+        </div>
+    <div class="inner-box">
+        <div class="content">
+            <a class="forgot-password-link" href="<?php echo $this->url('user', array('action' => 'sendMailReset'));?>">Forgot your password?</a>
+
+        </div>
+    </div>
+    <div class="footer">
+        <a href="<?php echo $this->url('auth', array('action' => 'signup', 'id' => $this->organizationObj->getDbName()))?>" class="signup" >
+            Don't have an account yet? <strong>Sign Up</strong></a>
+
+    </div>
+    </div>
+

@@ -1,0 +1,25 @@
+<?php
+$this->flashMessages($flashMessages);
+?>
+
+<div class="logo">
+    <strong>Samsa</strong> Software
+</div>
+<div class="box">
+    <div class="content">
+        <!-- Link as Toggle Button -->
+        <h3 class="form-title"><?php echo $this->translate('enter_valid_email_address');?></h3>
+
+        <form class="form-vertical forgot-password-form" method="POST" action="<?php echo $this->url('user', array('action' => 'generateToken'));?>">
+            <div class="form-group">
+                <div class="input-icon">
+                    <i class="icon-envelope"></i>
+                    <input type="text" name="email" class="form-control" placeholder="Enter email address" data-rule-required="true" data-rule-email="true" data-msg-required="Please enter your email." />
+                </div>
+            </div>
+            <button type="submit" class="submit btn btn-default btn-block">
+                <?php echo $this->translate('send_label');?>
+            </button>
+        </form>
+    </div> <!-- /.content -->
+</div>

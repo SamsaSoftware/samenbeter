@@ -1,0 +1,39 @@
+<?php
+$this->flashMessages($flashMessages);
+?>
+<div class="row">
+    <div class="col-md-12">
+        <div class="widget box">
+            <div class="widget-header">
+                <h4><i class="icon-reorder"></i> Templates list</h4>
+                <div class="toolbar no-padding">
+
+                </div>
+            </div>
+            <div class="widget-content">
+                <p><a href="<?php echo $this->url('template', array('action' => 'add'));?>" class="btn btn-success">Add new</a></p>
+                <table class="table table-striped table-bordered table-hover table-checkable datatable">
+                    <thead>
+                        <tr>
+                            <th>#</th>
+                            <th>Name</th>
+                            <th>Classpath</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                    <?php foreach ($this->templates as $key => $template) { ?>
+                        <tr>
+                            <td><?php echo $key;?></td>
+                            <td><?php echo $template->getName();?></td>
+                            <td><?php echo $template->getClasspath();?></td>
+                            <td><a href="<?php echo $this->url('template', array('action' => 'add', 'id' => $template->getId()));?>" class="label label-success">Edit</a>
+                                <a href="<?php echo $this->url('template', array('action' => 'delete', 'id' => $template->getId()));?>" class="label label-danger">Delete</a></td>
+                        </tr>
+                    <?php } ?>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>

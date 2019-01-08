@@ -1,0 +1,12 @@
+image: node:4.6.0
+  
+pipelines:
+  default:
+    - step:
+        script:
+           - echo $PRIVATE_KEY > ~/.ssh/id_rsa.tmp
+           - ssh root@dev.samsasoftware.nl ls -l /home/admin/domains/samsasoftware.nl/public_html/dev/mongo
+           - ssh root@dev.samsasoftware.nl pwd
+           - ssh root@dev.samsasoftware.nl sh gitmaster.bash
+           
+ 

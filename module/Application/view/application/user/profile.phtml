@@ -1,0 +1,73 @@
+
+<?php
+$this->flashMessages($flashMessages);
+
+$this->form->setAttribute('action', $this->url('user', array('action' => 'saveprofile')));
+$this->form->setAttribute('class', 'form-horizontal row-border');
+$this->form->setAttribute('id', 'saveprofile');
+$this->form->setAttribute('autocomplete', 'off');
+$this->form->prepare(); ?>
+
+
+<div class="row">
+    <div class="col-md-2"></div>
+    <div class="col-md-8">
+        <div class="widget box">
+            <div class="widget-header">
+                <h4><i class="icon-reorder"></i>Profile User</h4>
+                <div class="toolbar no-padding">
+
+                </div>
+            </div>
+            <div class="widget-content">
+                <?php
+
+                echo $this->form()->openTag($this->form);
+                ?>
+                <?php
+                echo $this->formInput($this->form->get('id'));
+                ?>
+                <div class="form-group">
+                    <label class="col-md-2 control-label" for="name"><?php echo $this->formLabel($this->form->get('name')); ?></label>
+                    <?php
+                    echo $this->formInput($this->form->get('name'));
+                    ?>
+                </div>
+                <div class="form-group">
+                    <label class="col-md-2 control-label" for="lastname"><?php echo $this->formLabel($this->form->get('lastname')); ?></label>
+                    <?php
+                    echo $this->formInput($this->form->get('lastname'));
+                    ?>
+                </div>
+
+                <div class="form-group">
+                    <label class="col-md-2 control-label" for="email"><?php echo $this->formLabel($this->form->get('email')); ?></label>
+                    <?php
+                    echo $this->formInput($this->form->get('email'));
+                    ?>
+                </div>
+                <div class="form-group">
+                    <label class="col-md-2 control-label" for="phone"><?php echo $this->formLabel($this->form->get('phone')); ?></label>
+                    <?php
+                    echo $this->formInput($this->form->get('phone'));
+                    ?>
+                </div>
+                <div class="form-group">
+                    <label class="col-md-2 control-label" for="address"><?php echo $this->formLabel($this->form->get('address')); ?></label>
+                    <?php
+                    echo $this->formTextarea($this->form->get('address'));
+                    ?>
+                </div>
+                <div class="form-actions">
+                    <?php echo $this->formRow($this->form->get('submit')); ?>
+                    <a class="btn btn-info" href="<?php echo $this->url('user', array('action' => 'password'))?>"><?php echo $this->translate('change_password_label');?></a>
+                    <a class="btn btn-info" href="<?php echo $this->url('user', array('action' => 'setDefaultSettings'))?>"><?php echo $this->translate('publish_my_settings_label');?></a>
+                </div>
+
+
+                <?php echo $this->form()->closeTag(); ?>
+                </div>
+            </div>
+        </div>
+    </div>
+

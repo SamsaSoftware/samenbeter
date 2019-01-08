@@ -1,0 +1,151 @@
+<script>
+    $(document).ready(function() {
+        $('#adduser').validate();
+        $('#emailElement').keyup(function() {
+            $.ajax({
+                url : $('#checkEmail').val(),
+                type : 'post',
+                data : {
+                    email: function() {
+                        return $('#emailElement').val();
+                    },
+                    oldEmail: function() {
+                        return $('#oldEmail').val();
+                    }
+                },
+                success: function(data){
+                    if (data === 'true') {
+                        $('#emailElement').removeClass('has-error').addClass('has-success');
+                        $('#emailElement').parent().removeClass('has-error').addClass('has-success');
+                        $('#submit').removeAttr('disabled');
+                        $('#alreadyExist').remove();
+                    } else {
+                        $('#emailElement').removeClass('has-success').addClass('has-error');
+                        $('#emailElement').after('<label for="email" generated="true" id="alreadyExist" class="has-error help-block">The email already exists!</label>')
+                        $('#emailElement').parent().removeClass('has-success').addClass('has-error');
+                        $('#submit').attr('disabled', 'disabled');
+                    }
+                }
+            });
+        });
+    });
+
+</script>
+<?php
+$this->flashMessages($flashMessages);
+
+$this->form->setAttribute('action', $this->url('user', array('action' => 'save')));
+$this->form->setAttribute('class', 'form-horizontal row-border');
+$this->form->setAttribute('id', 'adduser');
+$this->form->setAttribute('autocomplete', 'off');
+$this->form->prepare(); ?>
+
+<div class="row">
+    <div class="col-md-2"></div>
+    <div class="col-md-8">
+        <div class="widget box">
+            <div class="widget-header">
+                <h4><i class="icon-reorder"></i> Add User</h4>
+                <div class="toolbar no-padding">
+
+                </div>
+            </div>
+            <div class="widget-content">
+                <?php echo $this->form()->openTag($this->form);
+                ?>
+                <?php
+                echo $this->formInput($this->form->get('id'));
+                ?>
+                <div class="form-group">
+                    <label class="col-md-2 control-label" for="name"><?php echo $this->formLabel($this->form->get('name')); ?></label>
+                    <?php
+                    echo $this->formInput($this->form->get('name'));
+                    ?>
+                </div>
+                <div class="form-group">
+                    <label class="col-md-2 control-label" for="lastname"><?php echo $this->formLabel($this->form->get('lastname')); ?></label>
+                    <?php
+                    echo $this->formInput($this->form->get('lastname'));
+                    ?>
+                </div>
+                <?php if ($this->add) { ?>
+                    <div class="form-group">
+                        <label class="col-md-2 control-label" for="password"><?php echo $this->formLabel($this->form->get('password')); ?></label>
+                        <?php
+                        echo $this->formPassword($this->form->get('password'));
+                        ?>
+                    </div>
+                <?php } ?>
+                <div class="form-group">
+                    <label class="col-md-2 control-label" for="email"><?php echo $this->formLabel($this->form->get('email')); ?></label>
+                    <?php
+                    echo $this->formInput($this->form->get('email'));
+                    ?>
+                </div>
+                <div class="form-group">
+                    <label class="col-md-2 control-label" for="phone"><?php echo $this->formLabel($this->form->get('phone')); ?></label>
+                    <?php
+                    echo $this->formInput($this->form->get('phone'));
+                    ?>
+                </div>
+                <div class="form-group">
+                    <label class="col-md-2 control-label" for="address"><?php echo $this->formLabel($this->form->get('address')); ?></label>
+                    <?php
+                    echo $this->formTextarea($this->form->get('address'));
+                    ?>
+                </div>
+
+                <div class="form-group">
+                    <label class="col-md-2 control-label" for="role"><?php echo $this->formLabel($this->form->get('role')); ?></label>
+                    <div class="col-md-10">
+                        <div class="row">
+                            <div class="col-md-4">
+                                <?php
+                                echo $this->formSelect($this->form->get('role'));
+                                ?>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label class="col-md-2 control-label" for="organization"><?php echo $this->formLabel($this->form->get('organization')); ?></label>
+                    <div class="col-md-10">
+                        <div class="row">
+                            <div class="col-md-4">
+                                <?php
+                                echo $this->formSelect($this->form->get('organization'));
+                                ?>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label class="col-md-2 control-label" for="deleted"><?php echo $this->formLabel($this->form->get('deleted')); ?></label>
+                    <div class="col-md-10">
+                        <div class="row">
+                            <div class="col-md-4">
+                                <?php
+                                echo $this->formSelect($this->form->get('deleted'));
+                                ?>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="form-actions">
+                    <?php echo $this->formRow($this->form->get('submit')); ?>
+                </div>
+
+                <?php echo $this->form()->closeTag(); ?>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+<input type="hidden" name="checkEmail" id="checkEmail" value="<?php echo $this->url('user', array('action' => 'checkemail'))?>">
+<input type="hidden" name="oldEmail" id="oldEmail" value="<?php echo $this->oldEmail;?>">
+
+<?php
+// adding scripts
+//$this->headScript()->prependFile($this->basePath() . '/js/user/add.js');
+?>

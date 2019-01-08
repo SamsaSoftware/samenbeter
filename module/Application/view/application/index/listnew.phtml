@@ -1,0 +1,73 @@
+<script>
+    var selectedItems = [];
+    var selectedRefItems = [];
+    var configKendo = {
+   		 gridMenu: {
+            dataSource: {
+                type: "json",
+                serverPaging: true,
+                serverSorting: true,
+                pageSize: 100,
+                transport: {
+                    read: $('#urlAjax').val()+"/getMethodResult?objectType=\\Application\\Document\\"+"<?php echo $this->parentType; ?>"+
+                    "&methodName=getCustomer"+
+                    "&id="+"<?php echo $this->parentId; ?>"+
+                    "&viewId="+"<?php echo $this->viewId?>"+
+                    "&gridId="+'grid'
+                },
+                schema: {
+                    data: "records",
+                    model: {
+                        id : "recid",
+                        fields: {
+                            title: { type: "string" },
+                            name: { type: "string" }
+                        }
+                    }
+                },
+                pageSize: 20
+            },
+            height: 550,
+            groupable: true,
+            scrollable: {
+                virtual: true
+            },
+            sortable: true,
+       
+  
+        }
+    };
+
+
+    $(function () {
+        // MAIN initialization
+        loadList();
+    });
+
+  
+    function loadList(){
+      console.log("loading grid");
+  	  $("#component").kendoGrid(configKendo.gridMenu);
+    }
+
+
+</script>
+
+<div id="main" style="width: 100%; height: 400px;">
+<div id="example" class="k-content">
+		<div id="component"></div>
+	</div></div>
+
+
+<input type="hidden" name="urlAjax" id="urlAjax"
+	value="<?php echo $this->url('home');?>" />
+
+<input type="hidden" name="parentId" id="parentId"
+	value="<?php echo $this->parentId; ?>" />
+
+<input type="hidden" name="idObject" id="idObject"
+	value="<?php echo $this->id; ?>" />
+
+<input type="hidden" name="parentType" id="parentType"
+	value="<?php echo $this->parentType; ?>" />
+

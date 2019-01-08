@@ -1,0 +1,44 @@
+<script>
+    $(document).ready(function(){
+        "use strict";
+        $('#save-template').validate();
+    });
+</script>
+
+<div class="row">
+    <div class="col-md-2"></div>
+    <div class="col-md-8">
+        <div class="widget box">
+            <div class="widget-header">
+                <h4><i class="icon-reorder"></i> Add template</h4>
+                <div class="toolbar no-padding">
+
+                </div>
+            </div>
+            <div class="widget-content">
+                <form class="form-horizontal row-border" id="save-template" method="POST" action="<?php echo $this->url('template', array('action' => 'save'));?>">
+                    <div class="form-group">
+                        <label class="col-md-2 control-label">Name:</label>
+                        <div class="col-md-10">
+                            <input class="form-control input-width-large required" name="name"
+                                   type="text" placeholder="Name" value="<?php echo $this->template ? $this->template->getName() : ''?>">
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label class="col-md-2 control-label">ClassPath:</label>
+                        <div class="col-md-10">
+                            <input class="form-control input-width-large required" name="classpath"
+                                   type="text" placeholder="Classpath" value="<?php echo $this->template ? $this->template->getClasspath() : ''?>">
+                        </div>
+                    </div>
+                    <input name="id" type="hidden" value="<?php echo $this->id;?>" >
+                    <div class="form-actions">
+                        <input type="submit" value="Save" class="btn btn-primary pull-right">
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-2"></div>
+
+</div>

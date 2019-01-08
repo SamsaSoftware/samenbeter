@@ -1,0 +1,28 @@
+<div id="wrapper">
+
+<input type="hidden" name="user" id="userName" value="<?php echo $this->user->getName();?>">
+    <div id="main-container" >
+        <button type="button" id="leave-room">Leave</button>
+        <div id="messages">
+
+        </div>
+
+        <div id="msg-container">
+            <input type="text" id="msg" name="msg">
+            <button type="button" id="send-msg">Send</button>
+        </div>
+    </div>
+</div>
+
+<script id="messages-template" type="text/x-handlebars-template">
+    {{#each messages}}
+    <div class="msg">
+        <div class="time">{{time}}</div>
+        <div class="details">
+            <span class="user">{{user}}</span>: <span class="text">{{text}}</span>
+        </div>
+    </div>
+    {{/each}}
+</script>
+
+<?php echo $this->inlineScript()->prependFile($this->basePath() . '/js/chat/main.js') ?>

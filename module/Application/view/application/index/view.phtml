@@ -1,0 +1,282 @@
+<script type="text/javascript">
+var organization ='<?php echo $this->organization;?>';
+var openViews;
+var refresh;
+</script>
+<script>
+    // widget configuration
+    var config = {
+        layout: {
+            name: 'layoutMain',
+            padding: 4,
+            panels: [
+                { type: 'top', size: '1%', resizable: false, minSize: 30 },
+                
+                { type: 'main', minSize: 500 }
+            ]
+        },
+        sidebar:{
+            name: 'menuMain',
+            nodes: [ { id: 'level-1', text: '-', img: 'icon-folder', expanded: true, group: true,
+                nodes: [ 
+                       ]
+              }],
+            onClick: function(target, eventData) {
+        		console.log(eventData.object);
+                w2ui['layoutMain'].load('main', $('#urlAjax').val()+"/view/"+target+"?layout=layoutMain&parentType="+"<?php echo $this->parentType; ?>"+"&parentId="+"<?php echo $this->parentId;?>"+"&viewId="+eventData.object.views[0]['$id']);	
+          	},
+
+        },
+        toolbar:{
+
+        	 name : 'myToolbar',
+			 items: [],
+			   onClick: function(target, eventData) {
+	          		console.log(eventData);
+	          		
+		          	if(eventData.object != undefined && eventData.object.scope == 'application'){
+			          	executeAction(eventData);
+		            } else {
+			            if(eventData.object.views[0]['$id'] in openViews) {	
+				    		 w2ui['layoutMain'].load('main', $('#urlAjax').val()+"/view/"+target+"?layout=layoutMain&parentType="+"<?php echo $this->parentType; ?>"+"&parentId="+"<?php echo $this->parentId;?>"+"&viewId="+eventData.object.views[0]['$id']+"&refresh="+openViews[eventData.object.views[0]['$id']]['refresh'] );	
+			            }	            	
+			            else{
+
+		            		 $.ajax({
+		            	            type : 'POST',
+		            	            url: $('#urlAjax').val()+"/getObject?objectType=View&id="+eventData.object.views[0]['$id'],
+		            	            success:$.proxy(function(result){
+		            	            	openViews[eventData.object.views[0]['$id']]=[];
+		    		            	    openViews[eventData.object.views[0]['$id']]['refresh'] = false;	
+		    		            	    openViews[eventData.object.views[0]['$id']]['name'] = result['items'][0]['name'];	
+		    				            w2ui['layoutMain'].load('main', $('#urlAjax').val()+"/view/"+target+"?layout=layoutMain&parentType="+"<?php echo $this->parentType; ?>"+"&parentId="+"<?php echo $this->parentId;?>"+"&viewId="+eventData.object.views[0]['$id']+"&refresh="+openViews[eventData.object.views[0]['$id']]['refresh'] );	
+		    		            	    	  
+		            	            }, this),
+		            	            dataType : 'json'
+		            	        });
+			            	          	   
+			            }
+	                }
+	          	},
+	             
+	         
+
+		   },
+		   
+        
+    };
+
+    function executeAction(eventData){
+        console.log("execute application Action");
+        console.log(eventData);
+        if(eventData.target == '1'){
+            var inputE = [];
+            var link = {
+                id: "123",
+                text: "text",
+                actionExecution: "service",
+                actionResponse : "refreshAll()",
+                method:"undo",
+                parentType: '<?php echo $this->parentType; ?>',
+                objectType: '<?php echo $this->parentId; ?>',
+                serviceName:"Service",                         
+                serviceMethod:"undo"
+            }
+            inputE.recid = "123";
+            inputE.menuItem = [];
+            inputE.menuItem = link;
+            inputE.menuItem.id = "123";
+            inputE.menuItem.text = "text";
+            inputE.menuItem.actionExecution = "service";
+            inputE.menuItem.method ="undo";
+            inputE.menuItem.parentType = '<?php echo $this->parentType; ?>';
+            inputE.menuItem.objectType = '<?php echo $this->parentId; ?>';
+            inputE.menuItem.serviceName ="\\Application\\Service\\Service";                        
+            inputE.menuItem.serviceMethod ="undo";  
+            inputE.target = 'grid<?php echo $this->viewId;?>';
+            //execute local menu action
+            executeMenuAction(inputE, "123", '<?php echo $this->parentId; ?>');
+        } else if(eventData.target == '2') {
+        	refreshAll();
+        }
+    }//
+
+    function executeMenuAction(event, id, parentId){
+	}
+	
+    $(function () {
+
+        loadList();
+    });
+    
+    function script(url) {
+        var s = document.createElement('script');
+        s.type = 'text/javascript';
+        s.async = true;
+        s.src = url;
+        var x = document.getElementsByTagName('head')[0];
+        x.appendChild(s);
+    }
+    function stylesheet(url) {
+        var s = document.createElement('link');
+        s.type = 'text/css';
+        s.async = true;
+        s.src = url;
+        var x = document.getElementsByTagName('head')[0];
+        x.appendChild(s);
+    }
+
+    function fitWidget() {
+      	 var widget = $('#main');
+      	 var y = $('#main').position().top;
+      	 //var layoutHeight = $(window).height() - y - 10;
+      	var height = $(window).innerHeight() - y -45;
+      	//console.log("fit widget" + y);
+          //size widget to take the whole view
+          widget.height(height);
+          widget.resize(true);
+         // widget.refresh();
+          //console.log("fit widget - out");
+        
+        }
+
+        $(window).resize(function() {
+          clearTimeout(window._resizeId);
+          //console.log("fit widget - resize");
+          window._resizeId = setTimeout(function() {
+            console.log("resize");
+            fitWidget();
+          }, 700);
+        });
+
+     function  refreshAll(){
+       	 refreshView("");
+     }
+        
+    function  refreshView(msg){
+        console.log('refreshing View');
+        console.log(msg);   
+       // $.each(openViews, function(index, openView) {
+           // if(msg.type  = openView['name']){
+           //       openView['refresh'] =true;
+           //       openViews.push(openView);
+           //       console.log("view with id will be refreshed");   
+           // }
+       // }
+      
+        $.each(w2ui['layoutMain'].content('main').panels, function(index, panel) {
+       	    console.log( panel);
+            if( panel.content != undefined && panel.content != "")
+            {
+            	panel.content.reload();
+            }
+        });
+    }
+    
+    function loadList(){
+      
+
+    	fitWidget() ;
+    	$('#main').w2layout(config.layout);
+    	w2ui['layoutMain'].load('main', $('#urlAjax').val()+"<?php echo $this->linkView; ?>"+"?layout=layoutMain&parentType="+"<?php echo $this->parentType; ?>"+"&parentId="+"<?php echo $this->parentId;?>"+"&viewId="+"<?php echo $this->viewId;?>"+"&objectId="+"<?php echo $this->objectId;?>");
+    	//w2ui.layoutMain.content('left', $().w2sidebar(config.sidebar));
+  
+        var criteria = '';
+        if("<?php echo $this->mode; ?>" == "admin"){
+            console.log("ADMIN MODE");
+            criteria = "&criteria=scope-admin";
+        } else {
+       	   
+        	criteria = "&criteria=scope-"+ "<?php echo $this->sessionHelper()->getSamsarole();?>";//+"-platform-browser";
+        	console.log("SAMSA MODE"+ criteria);
+        }
+        var urlLink = window.location.href;
+        if (!w2ui['myToolbar']) {
+        w2ui.layoutMain.lock('main', 'Loading...', true);
+        $.ajax({
+            type : 'POST',
+            url: $('#urlAjax').val()+"/getMethodResultList?objectType=Workspace&methodName=getMenu&id="+"<?php echo $this->sessionHelper()->getWorkspaceId();?>"+criteria+"&urlLink="+urlLink,
+            success:$.proxy(function(result){
+                w2ui.layoutMain.unlock('main');
+            	//w2ui['menuMain'].add(result['items']);
+                if (!w2ui['myToolbar']) {
+                	var myKey = "AIzaSyCaYWKEFYLuVUKnzViTgdBtlc42vIDrzpk";
+               	   script("https://maps.googleapis.com/maps/api/js?key=" + myKey + "&callback=initialize");
+               	   script("<?php echo $this->basePath();?>"+'/js/kendo.messages.nl-NL.min.js');
+                    //$this->headScript()->appendFile($this->basePath() . '/js/kendo.all.min.js');
+                	//$this->headScript()->appendFile($this->basePath() . '/js/kendo.timezones.min.js') ;
+                   script("<?php echo $this->basePath();?>"+'/js/kendo.all.min.js');
+                   script("<?php echo $this->basePath();?>"+'/js/kendo.timezones.min.js');
+                   script("<?php echo $this->basePath();?>"+'/js/moment.js');
+                   script("<?php echo $this->basePath();?>"+'/js/print.min.js');
+               
+                  // script("<?php echo $this->basePath();?>"+'/js/websocket/main.js');
+                                                                                                         
+                   var items =   result['items'];
+            	   // add global Toolbar items
+                   var toolbar = {};
+                   toolbar.type  = "spacer";
+                   items.push( toolbar);
+            	   toolbar = {};
+            	  // toolbar.text = "Undo";
+            	   toolbar.icon = 'fa fa-undo';
+            	   toolbar.id = "1";
+            	   toolbar.type  = "button";
+            	   toolbar.scope  = "application";
+            	   toolbar.hint= 'Undo';
+            	   items.push( toolbar);
+            	   var toolbar = {};
+                   toolbar.type  = "break";
+                   items.push( toolbar);
+            	   toolbar = {};
+            	  // toolbar.text = "Undo";
+            	   toolbar.icon = 'fa fa-envelope';
+            	   toolbar.id = "3";
+            	   toolbar.type  = "button";
+            	   toolbar.scope  = "application";
+            	   toolbar.hint= 'Info';
+            	   items.push( toolbar);
+            	   var toolbar = {};
+                   toolbar.type  = "break";
+                   items.push( toolbar);
+            	   toolbar = {};
+              	   toolbar.icon = 'fa fa-refresh';
+              	   toolbar.id = "2";
+              	   toolbar.type  = "button";
+              	   toolbar.scope  = "application";
+              	   toolbar.hint= 'Refresh';
+              	   items.push( toolbar);
+            	   console.log(items);
+            	   config.toolbar.items = items;
+            	   w2ui.layoutMain.content('top', $().w2toolbar(config.toolbar));
+            	   openViews = [];
+            	   refresh = false;
+                   /*$.each(w2ui['myToolbar'].items, function( index, value){
+                       if (value.default != null && value.default == "true") {
+                           w2ui['myToolbar'].trigger({type: 'click', target: value.recid, object: value});
+                           return false;
+                       }
+                   });*/
+
+                }
+              	
+            }, this),
+            dataType : 'json'
+        });
+
+        }
+        
+      }
+
+
+</script>
+
+
+
+
+<!--  div id="app" style="width: 100%; height: 30px;"></div-->
+<div id="main" style="width: 100%; height: 880px;"></div>
+
+<input type="hidden" name="urlAjax" id="urlAjax"
+	value="<?php echo $this->url('home');?>" />
+<input type="hidden" name="layout" id="layout" value="layoutMain" />

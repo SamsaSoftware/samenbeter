@@ -1,0 +1,7 @@
+<?php
+$this->flashMessages($flashMessages);
+?>
+<form method="post" action="<?php echo $this->url('home', array('action' =>'import'))?>" enctype="multipart/form-data">
+<input type="file" name="file">
+    <input type="submit">
+</form>

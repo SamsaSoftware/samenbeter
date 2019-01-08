@@ -1,0 +1,93 @@
+<?php
+return array(
+    'doctrine' => array(
+
+        'connection' => array(
+            'odm_default' => array(
+                'server'           => 'localhost',
+                'port'             => '27017',
+                'user'             => 'user',
+                'password'         => 'password',
+                'options'          => array()
+            ),
+        ),
+
+        'authentication'    => array(
+            'odm_default'   => array(
+                'object_manager'            => 'doctrine.documentmanager.odm_default',
+                'identity_class'            => 'Application\Document\User',
+                'identity_property'         => 'email',
+                'credential_property'       => 'password',
+                'credential_callable' => 'Application\Document\User::hashPassword'
+                /*'credential_callable' => function(User $user, $passwordGiven) {
+                    $user->password = md5($passwordGiven);
+                    return $user->password;
+                },*/
+            ),
+        ),
+
+        'configuration' => array(
+            'odm_default' => array(
+                'metadata_cache'     => 'array',
+
+                'driver'             => 'odm_default',
+
+                'generate_proxies'   => true,
+                'proxy_dir'          => 'data/DoctrineMongoODMModule/Proxy',
+                'proxy_namespace'    => 'DoctrineMongoODMModule\Proxy',
+
+                'generate_hydrators' => true,
+                'hydrator_dir'       => 'data/DoctrineMongoODMModule/Hydrator',
+                'hydrator_namespace' => 'DoctrineMongoODMModule\Hydrator',
+
+                'default_db'         => 'zf2odm',
+
+                'filters'            => array(),  // array('filterName' => 'BSON\Filter\Class'),
+
+//                'logger'             => null // 'DoctrineMongoODMModule\Logging\DebugStack'
+            )
+        ),
+
+        'driver' => array(
+            __NAMESPACE__ . '_orm_driver' => array(
+                'class' => 'Doctrine\ORM\Mapping\Driver\AnnotationDriver',
+                'cache' => 'array',
+                'paths' => array(__DIR__ . '/../src/' . __NAMESPACE__ . '/Entity')
+            ),
+            'orm_default' => array(
+                'drivers' => array(
+                    __NAMESPACE__ . '\Entity' => __NAMESPACE__ . '_orm_driver'
+                )
+            ),
+            __NAMESPACE__ . '_odm_driver' => array(
+                'class' => 'Doctrine\ODM\MongoDB\Mapping\Driver\AnnotationDriver',
+                'paths' => array(__DIR__ . '/../src/' . __NAMESPACE__ . '/Document')
+            ),
+            'odm_default' => array(
+                'drivers' => array(
+                    __NAMESPACE__ . 'Application\Document' => __NAMESPACE__ . '_odm_driver'
+                )
+            )
+        ),
+
+        'documentmanager' => array(
+            'odm_default' => array(
+                'connection'    => 'odm_default',
+                'configuration' => 'odm_default',
+                'eventmanager' => 'odm_default'
+            )
+        ),
+
+        'eventmanager' => array(
+            'odm_default' => array(
+                'subscribers' => array()
+            )
+        ),
+    ),
+    'database' => array(
+        'username' => 'user',
+        'password' => 'password',
+        'dbname'   => 'zf2odm'
+
+    )
+);

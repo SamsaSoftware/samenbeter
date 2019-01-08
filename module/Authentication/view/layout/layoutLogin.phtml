@@ -1,0 +1,53 @@
+<?php echo $this->doctype(); ?>
+
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <?php echo $this->headTitle('Samsa Software') ?>
+    <?php if (getenv('APP_ENV') == 'production') {
+        $favicon = 'favicon';
+        echo $this->headTitle('Sign in')->setSeparator(' - ')->setAutoEscape(false);
+    } else {
+        $favicon = getenv('APP_ENV');
+        echo $this->headTitle('['.getenv('APP_ENV').']'.'Sign in')->setSeparator(' - ')->setAutoEscape(false);
+    }
+    ?>
+
+    <?php echo $this->headMeta()
+        ->appendName('viewport', 'width=device-width, initial-scale=1.0, minimum-scale=1.0, maximum-scale=1.0, user-scalable=0')
+        ->appendHttpEquiv('X-UA-Compatible', 'IE=edge')
+        ->appendHttpEquiv('Content-Type', 'text/html; charset=UTF-8')
+    ?>
+
+    <!-- Le styles -->
+    <?php echo $this->headLink(array('rel' => 'shortcut icon', 'type' => 'image/vnd.microsoft.icon', 'href' => $this->basePath() . '/img/'.$favicon.'.ico'))
+        ->prependStylesheet('http://fonts.googleapis.com/css?family=Open+Sans:400,600,700')
+        ->prependStylesheet($this->basePath('melon/assets/css/ie8.css'), 'text/javascript', array('conditional' => 'lt IE 8'))
+        ->prependStylesheet($this->basePath('melon/assets/css/fontawesome/font-awesome-ie7.min.css'), 'text/javascript', array('conditional' => 'lt IE 7'))
+        ->prependStylesheet($this->basePath('melon/assets/css/fontawesome/font-awesome.min.css'))
+        ->prependStylesheet($this->basePath('melon/assets/css/login.css'))
+        ->prependStylesheet($this->basePath('melon/assets/css/icons.css'))
+        ->prependStylesheet($this->basePath('melon/assets/css/plugins.css'))
+        ->prependStylesheet($this->basePath('melon/assets/css/main.css'))
+        ->prependStylesheet($this->basePath('melon/bootstrap/css/bootstrap.min.css')) ?>
+
+    <!-- Scripts -->
+    <?php echo $this->headScript()
+        ->prependFile($this->basePath('melon/plugins/nprogress/nprogress.js'))
+        ->prependFile($this->basePath('melon/plugins/validation/jquery.validate.min.js'))
+        ->prependFile($this->basePath('melon/plugins/uniform/jquery.uniform.min.js'))
+        ->prependFile($this->basePath('melon/assets/js/libs/html5shiv.js'),   'text/javascript', array('conditional' => 'lt IE 9',))
+        ->prependFile($this->basePath('melon/assets/js/libs/lodash.compat.min.js'))
+        ->prependFile($this->basePath('melon/bootstrap/js/bootstrap.min.js'))
+        ->prependFile($this->basePath('melon/assets/js/libs/jquery-1.10.2.min.js'))
+    ; ?>
+
+</head>
+<body class="login">
+
+    <?php echo $this->content; ?>
+
+ <!-- /container -->
+<?php echo $this->inlineScript() ?>
+</body>
+</html>

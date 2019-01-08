@@ -1,0 +1,538 @@
+
+<script type="text/javascript">
+ $(function() {
+	// create scheduler
+//	createScheduler();
+});
+
+
+ var config = {
+	        layout: {
+	       	 name: 'layout',
+	         padding: 4,
+	         panels: [
+	             /*{ type: 'top', size: '1%', resizable: true, minSize: 50 },*/
+	         
+	             { type: 'main',  resizable: true,size: '100%' },
+	          
+	             //{ type: 'right', size: '30%' ,resizable: true }
+	         ]
+	        }
+ }
+	       
+var DATE_MAPPING = [];	
+var keepData = [];
+var EVENT_SCHEMA;
+var EVENT_DATASOURCE;
+var RESOURCES;
+var TOOLTIP_TEMPLATE;
+var NODE_TEMPLATE;
+var RESOURCES_SCHEMA;
+var RESOURCES_NAME;
+var RESOURCES_DATESOURCE;
+var STARTDATE;	
+var STARTDATE;	
+var SCHEDULER_OPTIONS; // scheduler options
+
+//getResources();
+function createScheduler(RESOURCES,EVENT_DATASOURCE, RESOURCES_FIELD_ID, RESOURCES_ORIENTATION, RESOURCES_NAME){
+		// create scheduler instance
+		
+		//SCHEDULER_OPTIONS = {};
+		// SCHEDULER_OPTIONS = {
+			// height: 600,
+			// views: ["day",{type: "workWeek", selected: true },"week","month","agenda",{ type: "timeline", eventHeight: 50}],
+			// resources: RESOURCES,
+			// dataSource: EVENT_DATASOURCE
+			// editable: true,
+		// };
+	 //var templateNodeString = NODE_TEMPLATE;
+	$("#scheduler").kendoScheduler({
+		date: new Date(),
+		startTime: new Date(),
+		height: 650,
+		//footer: true,
+		showWorkHours: true,
+		workDayStart: new Date("2015/1/1 8:00 AM"),
+		workDayEnd: new Date("2015/1/1 10:00 PM"),
+		eventTemplate : NODE_TEMPLATE,
+		views: [{type: "day", majorTick:60 , eventHeight: 3, dateHeaderTemplate: kendo.template("<strong>#=kendo.toString(date, 'm')#</strong>")} ,{type: "month", selected: true},{ type :"week", eventHeight: 3, dateHeaderTemplate: kendo.template("<strong>#=kendo.toString(date, 'm')#</strong>")},"workWeek","agenda",{ type: "timelineMonth", eventHeight: 15, majorTick: 1440}],
+		timezone: "Etc/UTC",
+		editable: {
+			    create: false,
+		        confirmation: false
+			  },
+		group: {
+			resources: [RESOURCES_NAME],
+			orientation: RESOURCES_ORIENTATION
+		},
+		resources: RESOURCES,
+		dataSource: EVENT_DATASOURCE,
+		save: function( e) {
+	        console.log("save");
+	    },
+	    update: function( e){
+		    console.log(e);
+	    },
+	    resize: function(e) {
+	        console.log("Resize in", e.slot.start);
+	      },
+	    edit: function( e) {
+	    	e.preventDefault(); //prevent popup editing
+	        var dataSource = this.dataSource;
+	        var event = e.event;
+
+	        if (event.isNew()) {
+	          setTimeout(function() {
+	             dataSource.add(event);
+	              editEvent(event);
+	           });
+	        } else {
+	           editEvent(event);
+	        }
+          },
+	});
+       var templateText = '<label> Title: <input data-bind="value: title" readonly="true"/> </label> <label>Start: <input data-role="datetimepicker" data-bind="value: start" /></label><label>End:<input data-role="datetimepicker" data-bind="value: end" /></label> <button id="save">Save</button><button id="cancel">Cancel</button>';
+       var editor = $("#editor");
+       var template = kendo.template(templateText);
+       var scheduler = $("#scheduler").data("kendoScheduler");
+
+       function destroyEditor() {
+           kendo.destroy(editor);
+           editor.find("button").off();
+           editor.html("");
+        }
+
+        var currentEvent;
+
+        function onClose() {
+           // undo.fadeIn();
+        }
+        
+        function editEvent(event) {
+              destroyEditor();
+              console.log('editing...');
+              editor.html(template({}));
+              editor.kendoWindow({
+                  width: "600px",
+                  title: "Edit",
+                  visible: false,
+                  actions: [
+                      "Pin",
+                      "Minimize",
+                      "Maximize",
+                      "Close"
+                  ],
+                  close: onClose
+              }).data("kendoWindow").center().open();
+              kendo.bind(editor, event); //Bind the editor container (uses MVVM)
+
+              editor.find("#save").click(function() {
+                  console.log('save');
+                  scheduler.dataSource.sync();
+                  destroyEditor();
+              });
+
+              editor.find("#cancel").click(function() {
+                  scheduler.dataSource.cancelChanges(currentEvent);
+                  destroyEditor();
+              });
+          }
+ 
+
+
+	 var templateTooltipString = TOOLTIP_TEMPLATE;
+	
+	 console.log(" -- TREMPL "+ templateTooltipString);	 
+	 //'#var scheduler = target.closest("[data-role=scheduler]").data("kendoScheduler");#  #var uid = target.attr("data-uid");#  #var model=scheduler.occurrenceByUid(uid);# <li> <strong>event start:</strong> #=kendo.format("{0:d}",model.start)# </li> <li> <strong>event end:</strong> #=kendo.format("{0:d}",model.end)# </li> <li> <strong>event description:</strong> #=model.title# </li>';
+	    //console.log(templateString);
+	    $("#scheduler").kendoTooltip({
+	        filter: ".k-event",
+	        position: "top",
+	        width: 250,
+	        content: kendo.template(templateTooltipString)
+	    });
+	    fitWidget();
+	   
+}
+
+function getResourcesSchemaData(param){
+	
+    console.log(param.name+': ',param);   		
+	var resource_str = param.referencelink;
+	var resources_def = param.definition;
+	var resources_name = param.name;
+	var schema_str = param.schema;
+	var action_str = param.actionResponse;
+	var schema_obj = eval("(" + schema_str + ")");
+	var schema_model = schema_obj;
+	var resources_schema = kendo.data.Model.define(schema_model);
+	//console.log("getRes1"+resources_schema);
+	return new kendo.data.DataSource({
+		transport: {
+			read: {
+				headers: {"Authorization": "<?php echo $this->token;?>"},
+				//This should be a customized list of users, or all users fetched from the datastore
+				url: $('#urlAjax').val()+"/getMethodResultListReference?objectType="+resource_str+
+		"&methodName="+action_str+
+		"&id="+"<?php echo $this->parentId; ?>"+"&viewId="+"<?php echo $this->viewId; ?>"+"&gridId=schedulerresources", 
+				dataType: "json"
+			},
+		},
+		schema: {
+			data: "items",
+			model: resources_schema
+		}
+	});
+	
+	
+}
+
+function getEventsSchemaData(params){
+		
+	var event_str = params.referencelink;
+	var title_str = params.definition;
+	var events_schema_str = params.schema;
+	var action_str = params.actionResponse;
+	var schema_obj = eval("(" + events_schema_str + ")");
+	var schema_model = schema_obj.model;
+
+	var event_schema = kendo.data.SchedulerEvent.define(schema_model);
+	
+	return new kendo.data.SchedulerDataSource({
+		transport: {
+		    sync: function() {
+		        this.read();
+		       
+		      }, 
+			read: {
+				headers: {"Authorization": "<?php echo $this->token;?>"},
+				url: $('#urlAjax').val()+"/getMethodResultListReference?objectType="+event_str+"&methodName="+action_str+"&id="+"<?php echo $this->parentId; ?>"+"&viewId="+"<?php echo $this->viewId; ?>"+"&gridId=schedulerevents", // api to get event data
+				dataType: 'json'
+			},
+			create: {
+				headers: {"Authorization": "<?php echo $this->token;?>"},
+				url: $('#urlAjax').val()+"/execute",
+				dataType: 'json',
+				type: 'POST',
+				data:{trans_type:'create'}
+			},
+			update: {
+				headers: {"Authorization": "<?php echo $this->token;?>"},
+				url: $('#urlAjax').val()+"/execute",
+				dataType: 'json',
+				type: 'POST',
+				data:{trans_type:'update'}
+			},
+			destroy: {
+				headers: {"Authorization": "<?php echo $this->token;?>"},
+				url: $('#urlAjax').val()+"/deleteobjects",
+				dataType: 'json',
+				type: 'POST',
+				data:{trans_type:'destroy'}
+			},
+			requestEnd: function(e) {
+			    var response = e.response;
+			    var type = e.type;
+			    console.log(" in heer"); 
+			  },
+			parameterMap: function(options, operation) {
+				console.log( options+ " -- " + operation);
+				if (operation == "destroy"){
+					var returnArray = {};
+					returnArray.parentId = options.models[0].parents[0].$id;
+					var relationRef = options.models[0].parents[0].$ref;
+					relationRef = relationRef.capitalizeFirstLetter();
+					var lgth = relationRef.length;
+					relationRef = relationRef.substring(0,  lgth-1);
+					returnArray.parentType = ""+relationRef;
+					returnArray.objectType = ""+title_str;
+					returnArray.id = options.models[0].recid;
+					returnArray.actionExecution = "saveObject";
+					returnArray.data = {};
+					returnArray.data = [options.models[0].recid];
+					return returnArray;
+				}
+				else if (operation !== "read") {	
+					console.log("reading..." );
+					var returnArray = {};
+					//console.log(options.models[0]);
+					returnArray.parentId = options.models[0].parents[0].$id;
+					var relationRef = options.models[0].parents[0].$ref;
+					relationRef = relationRef.capitalizeFirstLetter();
+					var lgth = relationRef.length;
+					//returnArray = options.models[0];
+					relationRef = relationRef.substring(0,  lgth-1);
+					returnArray.parentType = ""+relationRef;
+					returnArray.objectType = ""+title_str;
+					returnArray.id = options.models[0].recid;
+					returnArray.actionExecution = "saveObject";
+					returnArray.data = {};
+					//returnArray.data.Klant = options.models[0].Klant;
+					keepData  = {};
+					keepData = options.models[0];
+					//returnArray.data.CustomerId = options.models[0].CustomerId;
+					returnArray.data.parent = options.models[0].parents;
+					returnArray.data.number = options.models[0].number;
+					returnArray.data.recid = options.models[0].recid;
+					//returnArray.data.parent = options.models[0].parents;
+					var d = new Date(options.models[0].startdateu).getTime();
+					//returnArray.data.startdateu = d;// options.models[0].startdateu;
+					console.log("startdateu is"+DATE_MAPPING['startdateu']);
+					startdateA = eval("(" + DATE_MAPPING['startdateu'] + ")");
+					console.log("startdateu is"+startdateA['date']);
+					eval("("+"returnArray.data."+startdateA['date']+' = kendo.toString(new Date(d), "dd-MM-yyyy"))');
+					eval("("+"returnArray.data."+startdateA['time']+' = kendo.toString(new Date(d), "HH:mm"))');
+					console.log("startdateu is"+returnArray.data.Ilctrainingevent_date);
+					console.log("enddateu is"+DATE_MAPPING['enddateu']);
+		            var d = new Date(options.models[0].enddateu).getTime();;
+		            //returnArray.data.enddateu = d;//options.models[0].enddateu;
+		        	enddateA = eval("(" + DATE_MAPPING['enddateu'] + ")");
+					eval("("+"returnArray.data."+enddateA['date']+' = kendo.toString(new Date(d), "dd-MM-yyyy"))');
+					eval("("+"returnArray.data."+enddateA['time']+' = kendo.toString(new Date(d), "HH:mm"))');
+		            return returnArray; 	
+					//return {models: kendo.stringify(options.models)};
+					//return $.extend({}, options, {foo: "bar"}); 
+				}
+			}
+		},
+		batch: true,
+		schema:{
+			data: "items",
+			model: event_schema,
+			parse: function(data) {
+				data_new = data.items;
+				//console.log(event_schema);
+				//console.log(data);
+				if( keepData != null ){
+					
+					data = keepData ;
+					keepData = null;
+					return data;
+				} else if( data_new != null ){
+				  for (var i = 0; i < data_new.length; i++) {
+					  console.log("datareading...parsing");
+					 // console.log(data_new[i]);
+					data_new[i].parents = [];
+					data_new[i].parents = data_new[i].parent;
+					delete(data_new[i].parent);
+					
+					if(data_new[i].startdateu){
+						var da = ""+data_new[i].startdateu;
+						if(da.length < 12 ){
+							  data_new[i].startdateu = convertDateToUTC(new Date(data_new[i].startdateu*1000));
+						}else{
+							data_new[i].startdateu = new Date(data_new[i].startdateu);
+						}
+					}
+					if(data_new[i].enddateu){
+						var da = ""+data_new[i].enddateu;
+						  if(da.length < 12){
+						      data_new[i].enddateu = convertDateToUTC(new Date(data_new[i].enddateu*1000));
+						  } else {
+						      data_new[i].enddateu = new Date(data_new[i].enddateu);
+						  };
+					}
+				  }
+				  
+				}
+				console.log(data);
+				return data;
+			}
+		}
+	});	
+}
+
+function convertDateToUTC(date) { 
+    return new Date(date.getUTCFullYear(), date.getUTCMonth(), date.getUTCDate(), date.getUTCHours(), date.getUTCMinutes(), date.getUTCSeconds()); 
+}
+function fitWidget() {
+    var widget = $("#scheduler").data("kendoScheduler");
+    var height = $(window).outerHeight();
+    console.log("fit widget");
+    //size widget to take the whole view
+   // widget.element.height(height);
+   // widget.resize(true);
+    widget.refresh();
+    setTimeout(function() {
+        var widget = $("#scheduler").data("kendoScheduler");
+ 	   var height = $(window).outerHeight();
+
+	    //size widget to take the whole view
+	    //widget.element.height(height);
+	 //   widget.resize(true);
+	    widget.refresh();
+      }, 5000);
+  }
+
+  $(window).resize(function() {
+    clearTimeout(window._resizeId);
+
+    window._resizeId = setTimeout(function() {
+      console.log("resize");
+      fitWidget();
+    }, 700);
+  });
+
+function getDateSchema(param) {
+    //console.log('GET DATE SCEHMA ', param.schema);  
+    return param.schema;
+}
+
+//1,977,828 operations/sec
+String.prototype.capitalizeFirstLetter = function() {
+    return this.charAt(0).toUpperCase() + this.slice(1);
+}
+// resources will be returned from single api call alongwith data and schema (can be manipulated to desired key /value)
+function getResources() {
+	keepData = null;
+
+	$.ajax({
+		headers: {"Authorization": "<?php echo $this->token;?>"},
+        type : 'POST',
+        url: $('#urlAjax').val()+"/getMethodResultListReference?objectType=View&methodName=getComponent[name-schedulerevents].getParameter&id="+"<?php echo $this->viewId; ?>",
+		success:$.proxy(function(result){
+                    console.log(result);
+			var arrayLength = result.items.length;
+			for(var i = 0; i < result.items.length; i++) {
+				
+			    var resultI = result.items[i];
+			    console.log(resultI);
+			    if(resultI['name'] == 'schedulerschema'){
+			    	var resources_info = resultI;
+			    	var get_res_info = getResourcesSchemaData(resultI);
+			    	var title_str = resultI.definition;
+			    } else  if(resultI['name'] == 'eventschema'){
+			    	var get_events_info = getEventsSchemaData(resultI);
+			    }else  if(resultI['name'] == 'startdateu'){
+			    	DATE_MAPPING['startdateu']= getDateSchema(resultI);
+			    }else  if(resultI['name'] == 'enddateu'){
+			    	DATE_MAPPING['enddateu']= getDateSchema(resultI);
+			    }else  if(resultI['name'] == 'tooltiptemplate'){
+			    	TOOLTIP_TEMPLATE = getDateSchema(resultI);
+			    }else  if(resultI['name'] == 'nodetemplate'){
+			    	NODE_TEMPLATE = getDateSchema(resultI);
+			    }		 		    
+			}
+			
+			$.when(get_res_info, get_events_info)
+			.done(function (response_resource, response_events) {
+				console.log("RESOURCES_DATASOURCE: ",response_resource);
+				console.log("EVENT_DATASOURCE: ",response_events);
+				console.log("TEXTE: ",resources_info.schema);
+				console.log("TTILE: ",title_str);
+				// resources schema field.id requires to be same as mapped in event schema to display resources i.e. customerId
+
+				var RESOURCES_FIELD_ID = resources_info.definition;
+			    var RESOURCES_NAME =  resources_info.resource;
+				var RESOURCES_FIELD_NAME = resources_info.definition;
+				var RESOURCES_TEXT = "text";//
+				var RESOURCES_VALUE = "value";
+				var RESOURCES_COLOR = "color";//
+				var RESOURCES_ORIENTATION = "vertical";
+				var resource_val = [{
+						field: RESOURCES_FIELD_ID,//title_str,
+						name: RESOURCES_FIELD_NAME,
+						title: title_str,
+						dataTextField: RESOURCES_TEXT,
+						dataValueField: RESOURCES_VALUE, // value field is also required to be mapped in resources schema i.e value : {from : Customer_value}
+						dataSource: response_resource
+				}];
+				RESOURCES = resource_val;
+				EVENT_DATASOURCE = response_events;
+				createScheduler(RESOURCES,EVENT_DATASOURCE, RESOURCES_FIELD_NAME, RESOURCES_ORIENTATION,RESOURCES_NAME);
+			});
+			
+        }, this),
+        dataType : 'json'
+    });
+	
+	
+}
+
+
+
+function loadList(){
+    //var scheduler = $("#myScheduler").data("kendoScheduler");
+    //$('#layout').w2layout(config.layout);
+	//kendo.culture("nl-NL");
+//    kendo.culture().calendar.firstDay = 1;
+//	 w2ui['layoutMain'].content('main','<div id="example" class="k-content" style="padding-top:10px;"><div id="editor"></div><div id="scheduler"></div></div>');
+	 var data= '<div id="scheduler"></div>';
+	 $('#example').html(data);
+	 //$('[data-role="init' + e.element['selector'] + '"]').html(data).trigger('create');
+//    $(':input[data-kendoDatePicker=true]').kendoDatePicker({
+//		culture: "<?php echo $this->schedulerLanguage;?>",
+//        format:        "dd MMM yyyy",
+//        parseFormats : [ "MM/dd/yyyy" ]
+//    });
+
+};
+function script(url) {
+    var s = document.createElement('script');
+    s.type = 'text/javascript';
+    s.async = true;
+    s.src = url;
+    var x = document.getElementsByTagName('head')[0];
+    x.appendChild(s);
+}
+
+$(function () {
+    // initialization
+	$.getScript("<?php echo $this->basePath();?>"+'/js/kendo.messages.'+"<?php echo $this->schedulerLanguage;?>"+'.min.js', function(){
+
+		});
+	$.getScript("<?php echo $this->basePath();?>"+'/js/kendo.culture.'+"<?php echo $this->schedulerLanguage;?>"+'.js', function(){
+
+	});
+	 setTimeout(function() {
+		 kendo.culture("<?php echo $this->schedulerLanguage;?>");
+		 getResources();
+		 loadList();
+	      }, 1000);
+    
+
+    //fitWidget();
+    // Your existing code unmodified...
+    /*var iDiv = document.createElement('div');
+    iDiv.id = 'block';
+    iDiv.className = 'block';
+
+    // Create the inner div before appending to the body
+    var innerDiv = document.createElement('div');
+    innerDiv.className = 'block-2';
+
+    // The variable iDiv is still good... Just append to it.
+    iDiv.appendChild(innerDiv);
+
+    // Then append the whole thing onto the body
+     document.getElementsByTagName('main')[0].appendChild(iDiv);
+     document.getElementById('block').setAttribute("style","position: absolute; left: 0px; width: 49.9%; height: 300px; border: 2px solid green");
+     document.getElementById('block').style.width='500px';*/
+
+});
+</script>
+
+
+
+    
+    
+<div id="main" style="width: 100%; height: 400px;">
+ 
+
+
+
+
+	<div id="example" class="k-content" style="padding-top:10px;">
+ 
+</div>
+
+</div>
+<input type="hidden" name="urlAjax" id="urlAjax"
+	value="http://localhost:8080/api" />
+<input type="hidden" name="parentId" id="parentId"
+	value="<?php echo $this->parentId; ?>" />
+<input type="hidden" name="idObject" id="idObject"
+	value="<?php echo $this->id; ?>" />
+<input type="hidden" name="parentType" id="parentType"
+	value="<?php echo $this->parentType; ?>" />

@@ -1,0 +1,14 @@
+<?php
+//$this->flashMessages($flashMessages);
+?>
+
+
+
+<div class="jumbotron">
+    <?php if ($this->organization->getDescription() != '') {?>
+        <h1><?php echo $this->organization->getDescription(); ?></h1>
+    <?php } else { ?>
+        <h1><?php echo $this->translate('home_welcome') . "  ". $this->organization->getName()."!"; ?> </h1>
+    <?php } ?>
+
+</div>
